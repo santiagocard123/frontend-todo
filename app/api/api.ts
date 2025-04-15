@@ -28,7 +28,7 @@ interface Task {
 }
 
 const api = axios.create({
-  baseURL: 'https://backend-todo-production-56bf.up.railway.app//api',
+  baseURL: 'https://backend-todo-production-56bf.up.railway.app/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -64,7 +64,7 @@ export const createTodoList = async (userId: string, name: string, description: 
 };
 
 export const updateTodoList = async (listId: string, updatedList: TodoList): Promise<TodoList> => {
-  const response = await fetch(`https://backend-todo-production-56bf.up.railway.app//api/todolists/${listId}`, {
+  const response = await fetch(`https://backend-todo-production-56bf.up.railway.app/api/todolists/${listId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
