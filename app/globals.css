@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  input:-webkit-autofill {
+    @apply shadow appearance-none border rounded w-full border-gray-700 py-2 px-3 text-white;
+    -webkit-box-shadow: 0 0 0 30px #1f2937 inset;
+    -webkit-text-fill-color: white !important;
+  }
+}
