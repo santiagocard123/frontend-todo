@@ -1,12 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { List, ListItem, ListItemText, IconButton, Avatar, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  List, ListItem, ListItemText, IconButton, Avatar, Button, TextField, Dialog,
+  DialogActions, DialogContent, DialogTitle
+} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
-import { createTodoList, deleteTodoList, updateTodoList, getTodoLists } from '@/app/api/api';
+import {
+  createTodoList,
+  deleteTodoList,
+  updateTodoList
+} from '@/app/api/api';
 
 type Todo = {
   id: string;
@@ -16,7 +23,7 @@ type Todo = {
   state: string;
   dueDate: string;
   completedDate?: string;
-}
+};
 
 type TodoList = {
   id: string;
@@ -38,16 +45,16 @@ interface SidebarProps {
   todoLists: TodoList[];
   onSelectList: (list: TodoList) => void;
   selectedList: TodoList | null;
-  fetchTodoLists: () => void; 
+  fetchTodoLists: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ 
-  user, 
+const Sidebar: React.FC<SidebarProps> = ({
+  user,
   handleLogout,
   todoLists,
   onSelectList,
   selectedList,
-  fetchTodoLists 
+  fetchTodoLists
 }) => {
   const [isOpen, setIsOpen] = useState(true);
   const [newListName, setNewListName] = useState('');
@@ -57,19 +64,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [updateListName, setUpdateListName] = useState('');
   const [updateListDescription, setUpdateListDescription] = useState('');
   const [listToUpdate, setListToUpdate] = useState<TodoList | null>(null);
-  const [todoListsFetch, setTodoLists] = useState<TodoList[]>([]);
 
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
-
-  // FUNCIONALIDAD LISTAS DE TAREAS
+  const toggleSidebar = () => setIsOpen(!isOpen);
 
   const handleCreateList = async () => {
     if (newListName.trim()) {
       try {
-        const newList = await createTodoList(user.id, newListName, newListDescription);
+        await createTodoList(user.id, newListName, newListDescription);
         setNewListName('');
         setNewListDescription('');
         setIsCreateDialogOpen(false);
@@ -81,38 +82,23 @@ const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleUpdateList = async () => {
-    if (listToUpdate && (updateListName.trim() || updateListDescription.trim())) {
+    if (listToUpdate) {
       try {
-        const currentList = todoLists.find(list => list.id === listToUpdate.id);
-        
-        if (!currentList) {
-          throw new Error('Lista no encontrada');
-        }
-
         const updatedList: TodoList = {
-          id: listToUpdate.id,
+          ...listToUpdate,
           name: updateListName || listToUpdate.name,
-          description: updateListDescription || listToUpdate.description,
-          tasks: currentList.tasks
+          description: updateListDescription || listToUpdate.description
         };
-  
-        const updatedListFromServer = await updateTodoList(
-          updatedList.id,
-          updatedList
-        );
 
-        setTodoLists(prevLists => prevLists.map(list => 
-          list.id === updatedListFromServer.id ? updatedListFromServer : list
-        ));
-  
-        setUpdateListName('');
-        setUpdateListDescription('');
+        const updatedListFromServer = await updateTodoList(updatedList.id, updatedList);
         setIsUpdateDialogOpen(false);
         setListToUpdate(null);
+        setUpdateListName('');
+        setUpdateListDescription('');
         fetchTodoLists();
-        onSelectList(updatedList)
+        onSelectList(updatedListFromServer);
       } catch (error) {
-        console.error('Error al actualizar la lista de tareas:', error);
+        console.error('Error updating todo list:', error);
       }
     }
   };
@@ -126,8 +112,6 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   };
 
-
-
   const openUpdateDialog = (list: TodoList) => {
     setListToUpdate(list);
     setUpdateListName(list.name);
@@ -138,7 +122,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <div style={{
       width: isOpen ? '250px' : '90px',
-      height: '100vh', 
+      height: '100vh',
       backgroundColor: '#111811',
       padding: '10px',
       position: 'fixed',
@@ -157,7 +141,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 
         {isOpen && (
           <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-            <Avatar 
+            <Avatar
               alt={user.nameUser}
               src=""
               style={{ width: '80px', height: '80px', margin: '0 auto' }}
@@ -174,36 +158,35 @@ const Sidebar: React.FC<SidebarProps> = ({
             {isOpen && <ListItemText primary="Nueva lista" />}
           </ListItem>
 
-          {isOpen && todoLists && todoLists.length > 0 ? (
+          {isOpen && todoLists.length > 0 ? (
             todoLists.map((list) => (
-            <ListItem
-              key={list.id}
-              onClick={() => onSelectList(list)}
-              component="button"
-              sx={{
-                backgroundColor: selectedList?.id === list.id ? 'rgba(0, 0, 0, 0.08)' : 'inherit', 
-              }}
-            >
-              <ListItemText primary={list.name} />
-              
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  openUpdateDialog(list);
+              <ListItem
+                key={list.id}
+                onClick={() => onSelectList(list)}
+                component="button"
+                sx={{
+                  backgroundColor: selectedList?.id === list.id ? 'rgba(0, 0, 0, 0.08)' : 'inherit',
                 }}
               >
-                <EditIcon style={{ color: 'white', fontSize: 'small' }} />
-              </IconButton>
+                <ListItemText primary={list.name} />
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    openUpdateDialog(list);
+                  }}
+                >
+                  <EditIcon style={{ color: 'white', fontSize: 'small' }} />
+                </IconButton>
 
-              <IconButton
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteList(list.id);
-                }}
-              >
-                <DeleteIcon style={{ color: 'white', fontSize: 'small' }} />
-              </IconButton>
-            </ListItem>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteList(list.id);
+                  }}
+                >
+                  <DeleteIcon style={{ color: 'white', fontSize: 'small' }} />
+                </IconButton>
+              </ListItem>
             ))
           ) : (
             isOpen && <ListItem><ListItemText primary="No hay listas disponibles" /></ListItem>
@@ -224,16 +207,12 @@ const Sidebar: React.FC<SidebarProps> = ({
           marginBottom: '30px'
         }}
       >
-        {isOpen && 'Cerrar sesion'}
+        {isOpen && 'Cerrar sesión'}
       </Button>
 
+      {/* Dialog para crear nueva lista */}
       <Dialog open={isCreateDialogOpen} onClose={() => setIsCreateDialogOpen(false)}
-        PaperProps={{
-          sx: {
-            backgroundColor: '#111827', 
-            color: 'white',            
-          },
-        }}
+        PaperProps={{ sx: { backgroundColor: '#111827', color: 'white' } }}
       >
         <DialogTitle>Crear nueva lista</DialogTitle>
         <DialogContent>
@@ -248,7 +227,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           />
           <TextField
             margin="dense"
-            label="Descripcion"
+            label="Descripción"
             type="text"
             fullWidth
             value={newListDescription}
@@ -261,8 +240,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         </DialogActions>
       </Dialog>
 
+      {/* Dialog para actualizar lista */}
       <Dialog open={isUpdateDialogOpen} onClose={() => setIsUpdateDialogOpen(false)}>
-        <DialogTitle>Actualizar Lista</DialogTitle>
+        <DialogTitle>Actualizar lista</DialogTitle>
         <DialogContent>
           <TextField
             autoFocus
@@ -275,7 +255,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           />
           <TextField
             margin="dense"
-            label="Nueva Descripcion"
+            label="Nueva descripción"
             type="text"
             fullWidth
             value={updateListDescription}
