@@ -17,7 +17,7 @@ interface TodoModalProps {
   onSave: (todo: Omit<Todo, 'id'>) => void;
   initialData?: Todo;
   toggleTodoState: (task: Todo) => void;
-  selectedListId: string; // 🔥 NUEVO
+  selectedListId: string; 
 }
 
 export default function TodoModal({
@@ -25,8 +25,7 @@ export default function TodoModal({
   onClose,
   onSave,
   initialData,
-  toggleTodoState,
-  selectedListId // 🔥 NUEVO
+  selectedListId 
 }: TodoModalProps) {
   const [todo, setTodo] = useState<Omit<Todo, 'id'>>({
     listId: '',
@@ -41,7 +40,7 @@ export default function TodoModal({
       setTodo(initialData);
     } else {
       setTodo({
-        listId: selectedListId, // 🔥 Usa el ID de la lista seleccionada
+        listId: selectedListId, 
         name: '',
         description: '',
         state: 'To Do',
